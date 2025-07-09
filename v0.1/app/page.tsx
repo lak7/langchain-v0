@@ -4,11 +4,21 @@ import { useState, useRef, useEffect } from 'react';
 import Image from "next/image";
 import { getStandAloneQs, getRAGResponse} from '@/actions/rag';
 
-interface Message {
+export interface Message {
   id: string;
   text: string;
-  sender: 'user' | 'bot';
+  sender: 'human' | 'ai';
   timestamp: Date;
+}
+
+function formatConvMemory(messages: String[]){
+  return messages.map((massage, i) => {
+    if(i%2 == 0){
+      return `Human: ${massage}`
+    }else{
+      return `AI: ${massage}`
+    }
+  }).join("\n")
 }
 
 export default function ChatBot() {
@@ -16,7 +26,7 @@ export default function ChatBot() {
     {
       id: '1',
       text: "Hello! I'm your AI assistant. How can I help you today?",
-      sender: 'bot',
+      sender: 'ai',
       timestamp: new Date()
     }
   ]);
@@ -55,7 +65,7 @@ export default function ChatBot() {
       const botMessage: Message = {
         id: Date.now().toString(),
         text: randomResponse,
-        sender: 'bot',
+        sender: 'ai',
         timestamp: new Date()
       };
       
@@ -65,11 +75,11 @@ export default function ChatBot() {
   };
 
   const handleSubmit = async () => {
-    const res = await getRAGResponse(inputValue);
+    const res = await getRAGResponse(inputValue, messages);
     const botMessage: Message = {
       id: Date.now().toString(),
       text: res as string,
-      sender: 'bot',
+      sender: 'ai',
       timestamp: new Date()
     };
     setMessages(prev => [...prev, botMessage]);
@@ -82,14 +92,14 @@ export default function ChatBot() {
     const userMessage: Message = {
       id: Date.now().toString(),
       text: inputValue,
-      sender: 'user',
+      sender: 'human',
       timestamp: new Date()
     };
 
     setMessages(prev => [...prev, userMessage]);
     setInputValue('');
     
-    // Simulate bot response
+    // Simulate ai response
     // simulateBotResponse(inputValue);
     handleSubmit();
   };
@@ -125,16 +135,16 @@ export default function ChatBot() {
         {messages.map((message) => (
           <div
             key={message.id}
-            className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'} animate-fadeIn`}
+            className={`flex ${message.sender === 'human' ? 'justify-end' : 'justify-start'} animate-fadeIn`}
           >
-            <div className={`flex gap-3 max-w-[80%] ${message.sender === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+            <div className={`flex gap-3 max-w-[80%] ${message.sender === 'human' ? 'flex-row-reverse' : 'flex-row'}`}>
               {/* Avatar */}
               <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center ${
-                message.sender === 'user' 
+                message.sender === 'human' 
                   ? 'bg-gradient-to-r from-green-500 to-emerald-600' 
                   : 'bg-gradient-to-r from-blue-500 to-purple-600'
               }`}>
-                {message.sender === 'user' ? (
+                {message.sender === 'human' ? (
                   <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
@@ -147,13 +157,13 @@ export default function ChatBot() {
               
               {/* Message Bubble */}
               <div className={`rounded-2xl px-4 py-3 shadow-lg message-bubble ${
-                message.sender === 'user'
+                message.sender === 'human'
                   ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-br-md'
                   : 'bg-gray-800 text-gray-100 rounded-bl-md border border-gray-700'
               }`}>
                 <p className="text-sm leading-relaxed">{message.text}</p>
                 <p className={`text-xs mt-1 ${
-                  message.sender === 'user' ? 'text-blue-100' : 'text-gray-400'
+                  message.sender === 'human' ? 'text-blue-100' : 'text-gray-400'
                 }`}>
                   {isClient ? new Date(message.timestamp).toLocaleTimeString([], { 
                     hour: '2-digit', 
