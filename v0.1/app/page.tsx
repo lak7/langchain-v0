@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Image from "next/image";
-import { getStandAloneQs } from '@/actions/standalone';
+import { getStandAloneQs, getRAGResponse} from '@/actions/rag';
 
 interface Message {
   id: string;
@@ -65,7 +65,7 @@ export default function ChatBot() {
   };
 
   const handleSubmit = async () => {
-    const res = await getStandAloneQs(inputValue);
+    const res = await getRAGResponse(inputValue);
     const botMessage: Message = {
       id: Date.now().toString(),
       text: res as string,
